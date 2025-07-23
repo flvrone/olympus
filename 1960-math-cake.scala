@@ -25,13 +25,39 @@ def countAllDists(
   println(initDist)
   nextDistribution(initDist, prevReceiverIndex) match
     case None => currentCount
-    case Some((nextDist, ri)) =>
-      countAllDists(nextDist, Some(ri), currentCount + 1)
+    case Some((newDist, ri, di)) =>
+      tryFastForwardDistribution(newDist, ri, di) match
+        case None => countAllDists(newDist, Some(ri), currentCount + 1)
+        case Some((futureDist, iterations)) =>
+          countAllDists(futureDist, Some(ri), currentCount + 1 + iterations)
+
+def tryFastForwardDistribution(
+    dist: Vector[Int],
+    rIndex: Int,
+    dIndex: Int
+): Option[(Vector[Int], Int)] =
+  if rIndex == dIndex - 1 then
+    val receiver = dist(rIndex)
+    val donor = dist(dIndex)
+    val diff = donor - receiver
+    if diff > 1 then
+      val iterations: Int = diff / 2
+      val futureDist = dist.toArray
+      futureDist(rIndex) = receiver + iterations
+      futureDist(dIndex) = donor - iterations
+
+      println(dist)
+      println("fast-forwarding...")
+      println(s"calculated iterations: $iterations")
+
+      Some((futureDist.toVector, iterations))
+    else None
+  else None
 
 def nextDistribution(
     dist: Vector[Int],
     prevReceiverIndex: Option[Int]
-): Option[(Vector[Int], Int)] =
+): Option[(Vector[Int], Int, Int)] =
   val sum = dist.sum
   for (ri, di) <- findReceiverDonorIndices(dist)
   yield
@@ -55,7 +81,7 @@ def nextDistribution(
           newDist(i) = baseLine
           newDist(lastIndex) += diff
 
-    (newDist.toVector, ri)
+    (newDist.toVector, ri, di)
 
 def findReceiverDonorIndices(dist: Vector[Int]): Option[(Int, Int)] =
   var index = dist.length - 2
@@ -64,28 +90,29 @@ def findReceiverDonorIndices(dist: Vector[Int]): Option[(Int, Int)] =
 @tailrec
 def findReceiverDonorIndices(
     dist: Vector[Int],
-    index: Int
+    rIndex: Int
 ): Option[(Int, Int)] =
-  if index < 0 then None
-  else if dist(index) < dist(index + 1) then
-    findDonorIndex(dist, index) match
-      case Some(donorIndex) => Some((index, donorIndex))
-      case None             => findReceiverDonorIndices(dist, index - 1)
-  else findReceiverDonorIndices(dist, index - 1)
+  if rIndex < 0 then None
+  else if dist(rIndex) < dist(rIndex + 1) then
+    findDonorIndex(dist, rIndex) match
+      case Some(donorIndex) => Some((rIndex, donorIndex))
+      case None             => findReceiverDonorIndices(dist, rIndex - 1)
+  else findReceiverDonorIndices(dist, rIndex - 1)
 
 def findDonorIndex(dist: Vector[Int], receiverIndex: Int): Option[Int] =
-  val index = receiverIndex + 1
-  findDonorIndex(dist, receiverIndex, index)
+  val dIndex = receiverIndex + 1
+  findDonorIndex(dist, receiverIndex, dIndex)
 
 @tailrec
 def findDonorIndex(
     dist: Vector[Int],
     receiverIndex: Int,
-    index: Int
+    dIndex: Int
 ): Option[Int] =
-  if index >= dist.length then None
+  if dIndex >= dist.length then None
   else
     val receiver = dist(receiverIndex)
-    val donor = dist(index)
-    if donor > receiver + 1 && donor > dist(index - 1) then Some(index)
-    else findDonorIndex(dist, receiverIndex, index + 1)
+    val donor = dist(dIndex)
+    val beforeDonor = dist(dIndex - 1)
+    if donor > receiver + 1 && donor > beforeDonor then Some(dIndex)
+    else findDonorIndex(dist, receiverIndex, dIndex + 1)
