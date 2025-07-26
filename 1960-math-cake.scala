@@ -1,6 +1,6 @@
 //> using scala 3.7.1
 
-package olimpus.mathcake
+package olympus.mathcake
 
 import scala.annotation.tailrec
 
