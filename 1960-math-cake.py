@@ -12,10 +12,10 @@ def main(cake_pieces: int, people: int) -> None:
     distribution = list(repeat(1, people))
     distribution[people - 1] = surplus + 1
 
-    print(countAllDists(distribution))
+    print(count_all_dists(distribution))
 
 
-def countAllDists(
+def count_all_dists(
   dist: list[int], prev_receiver_index: int = 0, current_count: int = 1
 ) -> int:
   while True:
