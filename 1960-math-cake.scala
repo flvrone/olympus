@@ -58,7 +58,6 @@ def nextDistribution(
     dist: Vector[Int],
     prevReceiverIndex: Option[Int]
 ): Option[(Vector[Int], Int, Int)] =
-  val sum = dist.sum
   for (ri, di) <- findReceiverDonorIndices(dist)
   yield
     val receiver = dist(ri)
