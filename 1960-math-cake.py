@@ -1,4 +1,5 @@
 import sys
+from array import array
 from itertools import repeat
 from typing import Optional
 
@@ -9,14 +10,14 @@ def main(cake_pieces: int, people: int) -> None:
     print("1")
   else:
     surplus = cake_pieces - people
-    distribution = list(repeat(1, people))
+    distribution = array("i", repeat(1, people))
     distribution[people - 1] = surplus + 1
 
     print(count_all_dists(distribution))
 
 
 def count_all_dists(
-  dist: list[int], prev_receiver_index: int = 0, current_count: int = 1
+  dist: array[int], prev_receiver_index: int = 0, current_count: int = 1
 ) -> int:
   while True:
     print(dist)
@@ -35,8 +36,8 @@ def count_all_dists(
         current_count += iterations
 
 def try_fast_forward_distribution(
-  dist: list[int], r_index: int, d_index: int
-) -> Optional[tuple[list[int], int]]:
+  dist: array[int], r_index: int, d_index: int
+) -> Optional[tuple[array[int], int]]:
   if r_index == d_index - 1:
     receiver = dist[r_index]
     donor = dist[d_index]
@@ -58,8 +59,8 @@ def try_fast_forward_distribution(
     return None
 
 def next_distribution(
-  dist: list[int], prev_receiver_index: int = 0
-) -> Optional[tuple[list[int], int, int]]:
+  dist: array[int], prev_receiver_index: int = 0
+) -> Optional[tuple[array[int], int, int]]:
   indices = find_receiver_donor_indices(dist, len(dist) - 2)
   if indices is None:
     return None
@@ -85,7 +86,9 @@ def next_distribution(
 
     return (dist, ri, di)
 
-def find_receiver_donor_indices(dist: list[int], r_index: int) -> Optional[tuple[int, int]]:
+def find_receiver_donor_indices(
+  dist: array[int], r_index: int
+) -> Optional[tuple[int, int]]:
   if r_index < 0:
     return None
   elif dist[r_index] < dist[r_index + 1]:
@@ -97,7 +100,9 @@ def find_receiver_donor_indices(dist: list[int], r_index: int) -> Optional[tuple
   else:
     return find_receiver_donor_indices(dist, r_index - 1)
 
-def find_donor_index(dist: list[int], receiver_index: int, d_index: int) -> Optional[int]:
+def find_donor_index(
+  dist: array[int], receiver_index: int, d_index: int
+) -> Optional[int]:
   if d_index >= len(dist):
    return None
   else:
